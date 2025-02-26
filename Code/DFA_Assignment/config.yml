@@ -1,0 +1,15 @@
+---
+Sigma: {'a', 'b', 'c'}
+States:
+  Q0:
+    Transitions:
+      q1: ['a']
+      q3: ['c']
+  Q1:
+    Transitions:
+      q2: ['b']
+  Q2:
+    Final: True
+  Q3:
+    Transitions:
+      q2: ['a']
