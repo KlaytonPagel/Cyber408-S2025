@@ -2,10 +2,10 @@
 #include <stdlib.h>
 
 #define G "S->pA:A->oS|pB:B->pC|o:C->o\0" //:D
-#define STATE_SIZE 10
+#define STATE_SIZE 100
 
 struct Grammar {
-	struct State * start;
+	struct State ** start;
 };
 
 struct State {
@@ -22,9 +22,11 @@ struct Grammar * parseGrammar(char *);
 struct State * makeState();
 struct State * fillState(char *);
 int findState(char car, struct State ** stList);
+void printGram(struct Grammar *);
 
 int main() {
 	struct Grammar * g1 = parseGrammar(G);
+	printGram(g1);
 }
 
 struct Grammar * parseGrammar(char * grahm) {
@@ -38,26 +40,49 @@ struct Grammar * parseGrammar(char * grahm) {
 			printf("<- production here %c\n", grahm[crount-1]);
 			stList[stListCrount] = makeState();
 			stList[stListCrount]->id = grahm[crount-1];
+			stListCrount++;
 		}
 		crount++;
 	}
 	crount = 0;
-	stListCrount = 0;
+	stListCrount = -1;
 	int trainNum = 0;
 	while (grahm[crount] != '\0') {
-		//transitions now
+		//transitions now 
 		if (grahm[crount] == 62 || grahm[crount] == 124) { // > or |
-			if (grahm[crount+1] >= 97 && grahm[crount+1] <= 122) { //low :)
+			// Foundded a new trans
+			if (grahm[crount+1] >= 97 && grahm[crount+1] <= 122) { //low :) == terminal
 				stList[stListCrount]->transitions[trainNum]->transition = grahm[crount+1];
 			}
-			if (grahm[crount+2] >= 65 && grahm[crount+2] <= 90) { //upper, we also have more room 
-				int state = findState(grahm[crount+1], stList);
+			if (grahm[crount+2] >= 65 && grahm[crount+2] <= 90) { //upper, we also have more room  we foundded the next state
+				int state = findState(grahm[crount+2], stList);
 				stList[stListCrount]->transitions[trainNum]->next = stList[state];
 			}
-		} else {
-			printf("%c\n", grahm[crount]);
+			trainNum++;
+		} 
+		if (grahm[crount + 1] == '-') {
+			stListCrount++;
+			trainNum = 0;
 		}
 		crount++;
+	}
+	g->start = stList;
+	return g;
+}
+
+void printGram(struct Grammar * g) {
+	int count = 0;
+	while (g->start[count] != NULL) {
+		printf("stateName: %c\n", g->start[count]->id);
+		int count2 = 0;
+		do {
+			printf("\tterminal: %c\n", g->start[count]->transitions[count2]->transition);
+			if (g->start[count]->transitions[count2]->next != NULL) {
+				printf("\tnextState: %c\n", g->start[count]->transitions[count2]->next->id);
+			}
+			count2++;
+		} while (g->start[count]->transitions[count2]->transition != '\0');
+		count++;
 	}
 }
 
@@ -71,7 +96,7 @@ int findState(char car, struct State ** stList) {
 		count++;
 	}
 	if (fart == -1) {
-		printf("state list does not contain that Procedure??");
+		printf("state list does not contain that Procedure??\n");
 	}
 	return fart;
 }
